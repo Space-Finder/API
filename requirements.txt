@@ -1,0 +1,6 @@
+pre-commit
+python-multipart
+fastapi
+fastapi-utils
+python-dotenv
+slowapi
