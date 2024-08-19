@@ -3,7 +3,7 @@ python script to start the rest api and load routes
 """
 
 __version__ = "0.0.1"
-__author__ = ["FusionSid"]
+__author__ = ["Siddhesh Zantye"]
 __licence__ = "MIT License"
 
 import os
@@ -27,7 +27,6 @@ app = FastAPI()
 
 
 def main() -> None:
-
     # check that both certificate files exist
     both_certfiles_exist = all([exists(SSL_CERTFILE_PATH), exists(SSL_KEYFILE_PATH)])
 
