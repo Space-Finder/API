@@ -17,6 +17,7 @@ from fastapi import FastAPI
 from dotenv import load_dotenv
 
 from core.db.prisma import prisma
+from routes import router_list, middleware_list
 from core.helpers.exceptions import InvalidDevmodeValue
 
 PORT: Final = 8443 if (port := os.getenv("PORT")) is None else int(port)
@@ -43,6 +44,14 @@ async def lifespan(app: FastAPI):
 # needs to be outside main function for uvicorn to work
 load_dotenv()
 app = FastAPI(lifespan=lifespan)
+
+# iterate through routers list and include them all
+for route in router_list:
+    app.include_router(router=route)
+
+# iterate through middleware list and include them all
+for middleware in middleware_list:
+    app.add_middleware(middleware)
 
 
 def main() -> None:
