@@ -53,6 +53,15 @@ class InvalidDevmodeValue(RichBaseException):
         sys.exit(1)
 
 
+class NoDatabaseURL(RichBaseException):
+    def __init__(self) -> None:
+        super().__init__(
+            "No database URL",
+            "No database URL was provided :(",
+        )
+        sys.exit(1)
+
+
 class NoAssetsDirectory(RichBaseException):
     def __init__(
         self,
