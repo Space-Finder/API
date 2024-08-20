@@ -9,21 +9,40 @@ __licence__ = "MIT License"
 import os
 from typing import Final
 from os.path import dirname, join, exists
+from contextlib import asynccontextmanager
 
 import uvicorn
 from rich import print
 from fastapi import FastAPI
 from dotenv import load_dotenv
 
+from core.db.prisma import prisma
 from core.helpers.exceptions import InvalidDevmodeValue
 
 PORT: Final = 8443 if (port := os.getenv("PORT")) is None else int(port)
 SSL_CERTFILE_PATH: Final = join(dirname(__file__), "cert.pem")
 SSL_KEYFILE_PATH: Final = join(dirname(__file__), "key.pem")
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Runs when api is starting up
+    print("[bold green]Server Started Up Successfully![/]")
+    print("[bold blue]Connecting To Database...[/]")
+    await prisma.connect()
+    print("[bold green]Connected To Database Successfuly![/]")
+
+    yield  # the api is just running normally
+
+    # Runs before api has shut down
+    print("[bold blue]Disconnecting From Database...[/]")
+    await prisma.disconnect()
+    print("[bold blue]Shutting Down Server[/]")
+
+
 # needs to be outside main function for uvicorn to work
 load_dotenv()
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 
 def main() -> None:
@@ -36,7 +55,6 @@ def main() -> None:
         raise InvalidDevmodeValue(provided=devmode)
     run_in_devmode = devmode == "true" or not both_certfiles_exist
 
-    # set the uvicorn server options based one dev mode or not
     options = (
         {
             "app": "main:app",
@@ -54,7 +72,7 @@ def main() -> None:
         }
     )
     print(f"[bold blue]Running in dev mode:[/] {run_in_devmode}")
-    print("[bold blue]Starting Up Server")
+    print("[bold blue]Starting Up Server...")
     uvicorn.run(**options)
 
 
