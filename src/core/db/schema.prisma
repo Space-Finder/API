@@ -1,28 +1,111 @@
-datasource db {
-    provider = "sqlite"
-    url      = "file:database.db"
-}
-
-// generator
 generator client {
     provider             = "prisma-client-py"
     recursive_type_depth = 5
 }
 
-// data models
-model Post {
-    id        Int     @id @default(autoincrement())
-    title     String
-    content   String?
-    views     Int     @default(0)
-    published Boolean @default(false)
-    author    User?   @relation(fields: [author_id], references: [id])
-    author_id Int?
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Common {
+  id     String  @id @unique @default(cuid())
+  name   String  @unique
+  color  String?
+  spaces Space[]
+
+  @@map("commons")
+}
+
+model Space {
+  id   String @id @unique @default(cuid())
+  name String
+
+  commonId String @map("common_id")
+  common   Common @relation(fields: [commonId], references: [id])
+
+  @@map("spaces")
+}
+
+model Course {
+  id   String @id @unique @default(cuid())
+  line Int
+  name String
+
+  teacherId String  @map("teacher_id")
+  teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String? @map("user_id")
+
+  @@map("classes")
+}
+
+model Teacher {
+  id   String @id @unique @default(cuid())
+  code String @unique
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  classes Course[]
+
+  @@map("teachers")
 }
 
 model User {
-    id    Int     @id @default(autoincrement())
-    email String  @unique
-    name  String?
-    posts Post[]
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  image         String?
+  emailVerified DateTime? @map("email_verified")
+  isOnboarded   Boolean   @default(false) @map("is_onboarded")
+  kamarPassword String?   @map("kamar_password")
+  isTeacher     Boolean   @default(false) @map("is_teacher")
+  accounts      Account[]
+  sessions      Session[]
+  teachers      Teacher[]
+  classes       Course[]
+
+  @@map("users")
+}
+
+// Authentication Related Models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
 }
