@@ -2,6 +2,12 @@
 This module contains exceptions to make development easier
 """
 
+__all__ = [
+    "InvalidDevmodeValue",
+    "NoAssetsDirectory",
+    "APIHTTPExceptions",
+]
+
 import sys
 from enum import Enum
 
