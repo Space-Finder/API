@@ -1,3 +1,4 @@
-__all__ = ("prisma",)
+__all__ = ("prisma", "Settings")
 
 from .db import prisma
+from .models import Settings
