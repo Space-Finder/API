@@ -7,6 +7,7 @@ __author__ = ["Siddhesh Zantye"]
 __licence__ = "MIT License"
 
 import os
+from json import loads
 from typing import Final
 from os.path import dirname, join, exists
 from contextlib import asynccontextmanager
@@ -15,12 +16,13 @@ import uvicorn
 from rich import print
 from fastapi import FastAPI
 from dotenv import load_dotenv
+from pydantic import ValidationError
 
-from core.db.prisma import prisma
+from core import prisma
+from core.models.env import Settings
 from routes import router_list, middleware_list
-from core.helpers.exceptions import InvalidDevmodeValue
+from core.helpers.exceptions import InvalidDevmodeValue, NoDatabaseURL
 
-PORT: Final = 8443 if (port := os.getenv("PORT")) is None else int(port)
 SSL_CERTFILE_PATH: Final = join(dirname(__file__), "cert.pem")
 SSL_KEYFILE_PATH: Final = join(dirname(__file__), "key.pem")
 
@@ -55,26 +57,36 @@ for middleware in middleware_list:
 
 
 def main() -> None:
+    try:
+        settings = Settings(**{})
+    except ValidationError as err:
+        error_value = loads(err.json())[0]["loc"][0]
+
+        if error_value == "DEVMODE":
+            raise InvalidDevmodeValue(provided=os.environ.get("DEVMODE", "")) from err
+        elif error_value == "DATABASE_URL":
+            raise NoDatabaseURL() from err
+
+        raise err
+
     # check that both certificate files exist
     both_certfiles_exist = all([exists(SSL_CERTFILE_PATH), exists(SSL_KEYFILE_PATH)])
+    run_in_devmode = settings.DEVMODE or not both_certfiles_exist
 
-    # check if to startup api in dev mode or not
-    devmode = os.environ.get("DEVMODE", "").lower()
-    if devmode not in ["true", "false"]:
-        raise InvalidDevmodeValue(provided=devmode)
-    run_in_devmode = devmode == "true" or not both_certfiles_exist
+    BASE_OPTIONS = {
+        "app": "main:app",
+        "port": settings.PORT,
+    }
 
-    options = (
+    OPTIONS = (
         {
-            "app": "main:app",
-            "port": PORT,
+            **BASE_OPTIONS,
             "reload": True,
         }
         if run_in_devmode
         else {
-            "app": "main:app",
+            **BASE_OPTIONS,
             "reload": False,
-            "port": PORT,
             "access_log": False,
             "ssl_keyfile": SSL_KEYFILE_PATH,
             "ssl_certfile": SSL_CERTFILE_PATH,
@@ -82,7 +94,7 @@ def main() -> None:
     )
     print(f"[bold blue]Running in dev mode:[/] {run_in_devmode}")
     print("[bold blue]Starting Up Server...")
-    uvicorn.run(**options)
+    uvicorn.run(**OPTIONS)
 
 
 if __name__ == "__main__":
