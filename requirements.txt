@@ -4,3 +4,4 @@ fastapi
 fastapi-utils
 python-dotenv
 slowapi
+validators
