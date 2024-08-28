@@ -1,6 +1,6 @@
 generator client {
-    provider             = "prisma-client-py"
-    recursive_type_depth = 5
+  provider             = "prisma-client-py"
+  recursive_type_depth = 5
 }
 
 datasource db {
@@ -8,11 +8,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Booking {
+  id           String  @id @unique @default(cuid())
+  week         Int
+  periodNumber Int     @map("period_number")
+  spaceId      String
+  courseId     String
+  teacherId    String
+  space        Space   @relation(fields: [spaceId], references: [id])
+  course       Course  @relation(fields: [courseId], references: [id])
+  teacher      Teacher @relation(fields: [teacherId], references: [id])
+
+  @@map("bookings")
+}
+
 model Common {
-  id     String  @id @unique @default(cuid())
-  name   String  @unique
-  color  String?
-  spaces Space[]
+  id    String  @id @unique @default(cuid())
+  name  String  @unique
+  color String?
+
+  spaces  Space[]
+  Teacher Teacher[]
+  Course  Course[]
 
   @@map("commons")
 }
@@ -21,8 +38,9 @@ model Space {
   id   String @id @unique @default(cuid())
   name String
 
-  commonId String @map("common_id")
-  common   Common @relation(fields: [commonId], references: [id])
+  commonId String    @map("common_id")
+  common   Common    @relation(fields: [commonId], references: [id])
+  Booking  Booking[]
 
   @@map("spaces")
 }
@@ -30,42 +48,48 @@ model Space {
 model Course {
   id   String @id @unique @default(cuid())
   line Int
+  code String
   name String
 
-  teacherId String  @map("teacher_id")
-  teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  commonId  String @map("common_id")
+  teacherId String @map("teacher_id")
 
-  user   User?   @relation(fields: [userId], references: [id])
-  userId String? @map("user_id")
+  teacher Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  common  Common    @relation(fields: [commonId], references: [id], onDelete: Cascade)
+  Booking Booking[]
 
   @@map("classes")
 }
 
 model Teacher {
-  id   String @id @unique @default(cuid())
-  code String @unique
+  id    String @id @unique @default(cuid())
+  code  String @unique
+  email String @unique
 
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String? @unique @map("user_id")
+  commonId String  @map("common_id")
 
+  user    User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  common  Common    @relation(fields: [commonId], references: [id])
   classes Course[]
+  Booking Booking[]
 
   @@map("teachers")
 }
 
 model User {
   id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  image         String?
+  name          String
+  email         String    @unique
+  image         String
   emailVerified DateTime? @map("email_verified")
   isOnboarded   Boolean   @default(false) @map("is_onboarded")
   kamarPassword String?   @map("kamar_password")
   isTeacher     Boolean   @default(false) @map("is_teacher")
-  accounts      Account[]
-  sessions      Session[]
-  teachers      Teacher[]
-  classes       Course[]
+
+  teacher  Teacher?
+  accounts Account[]
+  sessions Session[]
 
   @@map("users")
 }
