@@ -11,7 +11,7 @@ teacher_router = APIRouter(
 )
 
 SCHOOL_DOMAIN = "ormiston.school.nz"
-TEACHERS = ["st22209@ormiston.school.nz", "hprasad@ormiston.school.nz"]
+TEACHERS = ["gsheppard@ormiston.school.nz", "hprasad@ormiston.school.nz"]
 
 
 @teacher_router.get("/verify")
@@ -24,4 +24,4 @@ async def verify_is_teacher(request: Request, email: str):
         email in TEACHERS,
     ]
 
-    return all(conditions)
+    return {"success": True, "isTeacher": all(conditions)}
