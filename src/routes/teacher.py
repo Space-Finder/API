@@ -2,6 +2,7 @@ __all__ = ("teacher_router",)
 
 import validators
 from fastapi import APIRouter, Request
+from core import prisma
 
 teacher_router = APIRouter(
     tags=[
@@ -11,17 +12,17 @@ teacher_router = APIRouter(
 )
 
 SCHOOL_DOMAIN = "ormiston.school.nz"
-TEACHERS = ["gsheppard@ormiston.school.nz", "hprasad@ormiston.school.nz"]
 
 
 @teacher_router.get("/verify")
 async def verify_is_teacher(request: Request, email: str):
-    # Will be updated to use database, once data is given from Mr Lambert
+    teachers_list = {teacher.email for teacher in await prisma.teacher.find_many()}
+
     conditions = [
         email,
         validators.email(email),
         email.endswith(SCHOOL_DOMAIN),
-        email in TEACHERS,
+        email in teachers_list,
     ]
 
     return {"success": True, "isTeacher": all(conditions)}
