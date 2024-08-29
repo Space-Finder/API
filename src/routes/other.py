@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 
+from core import get_week
+
 other_router = APIRouter(
     tags=[
         "Other",
@@ -25,3 +27,12 @@ async def ping(request: Request) -> dict:
     """
 
     return {"success": True, "detail": "pong"}
+
+
+@other_router.get("/api/week")
+async def week_number(request: Request) -> dict:
+    """
+    returns the week number
+    """
+
+    return {"success": True, "week": get_week()}
