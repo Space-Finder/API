@@ -16,16 +16,17 @@ model Booking {
   courseId     String
   teacherId    String
   space        Space   @relation(fields: [spaceId], references: [id])
-  course       Course  @relation(fields: [courseId], references: [id])
-  teacher      Teacher @relation(fields: [teacherId], references: [id])
+  course       Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  teacher      Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 
   @@map("bookings")
 }
 
 model Common {
-  id    String  @id @unique @default(cuid())
-  name  String  @unique
-  color String?
+  id     String  @id @unique @default(cuid())
+  name   String  @unique
+  color  String?
+  color2 String?
 
   spaces  Space[]
   Teacher Teacher[]
@@ -39,7 +40,7 @@ model Space {
   name String
 
   commonId String    @map("common_id")
-  common   Common    @relation(fields: [commonId], references: [id])
+  common   Common    @relation(fields: [commonId], references: [id], onDelete: Cascade)
   Booking  Booking[]
 
   @@map("spaces")
