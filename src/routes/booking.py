@@ -27,6 +27,7 @@ async def get_bookings(request: Request, teacher_id: str):
 
     return await prisma.booking.find_many(
         where={"week": next_week, "teacherId": teacher_id},
+        include={"course": True, "space": True},
     )
 
 
