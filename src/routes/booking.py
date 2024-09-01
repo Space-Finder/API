@@ -17,7 +17,7 @@ class Booking(BaseModel):
     week: int
     period: int
     space_id: str
-    class_id: str
+    course_id: str
     teacher_id: str
 
 
@@ -34,15 +34,15 @@ async def get_bookings(request: Request, teacher_id: str):
 async def get_bookings_todo(request: Request, teacher_id: str):
     next_week = get_week() + 1
 
-    classes = await prisma.course.find_many(where={"teacherId": teacher_id})
-    if not classes:
+    courses = await prisma.course.find_many(where={"teacherId": teacher_id})
+    if not courses:
         return []
 
     # Get all bookings for these classes in the next week
-    class_ids = [course.id for course in classes]
+    course_ids = [course.id for course in courses]
     bookings = await prisma.booking.find_many(
         where={
-            "courseId": {"in": class_ids},
+            "courseId": {"in": course_ids},
             "teacherId": teacher_id,
             "week": next_week,
         }
@@ -51,7 +51,7 @@ async def get_bookings_todo(request: Request, teacher_id: str):
     booked_periods = {(booking.courseId, booking.periodNumber) for booking in bookings}
 
     todo = []
-    for course in classes:
+    for course in courses:
         todo.extend(
             {
                 "period_number": period,
@@ -88,7 +88,7 @@ async def make_booking(request: Request, booking_data: Booking):
             "week": booking_data.week,
             "periodNumber": booking_data.period,
             "spaceId": booking_data.space_id,
-            "courseId": booking_data.class_id,
+            "courseId": booking_data.course_id,
             "teacherId": booking_data.teacher_id,
         }
     )
