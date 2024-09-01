@@ -2,6 +2,7 @@ __all__ = ("teacher_router",)
 
 import validators
 from fastapi import APIRouter, Request
+
 from core import prisma
 
 teacher_router = APIRouter(
