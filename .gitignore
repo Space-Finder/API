@@ -102,3 +102,4 @@ config.yaml
 *.mypy_cache
 *.sqlite3*
 *.pem
+create_data.py
