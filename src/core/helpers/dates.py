@@ -1,11 +1,14 @@
 from datetime import date, datetime
 
+import pytz
+
 from .period import PERIODS
 
 
 def get_week(d: date | None = None):
     if d is None:
-        d = datetime.now()
+        auckland = pytz.timezone("Pacific/Auckland")
+        d = datetime.now(auckland)
     return d.isocalendar()[1]
 
 

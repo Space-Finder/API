@@ -1,4 +1,6 @@
-from datetime import datetime, timezone
+from datetime import datetime
+
+import pytz
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 
@@ -47,7 +49,7 @@ async def get_period_from_time(request: Request, time: datetime | None = None) -
     (Uses UTC time)
     """
 
-    if time is None:
-        time = datetime.now(timezone.utc)
+    auckland = pytz.timezone("Pacific/Auckland")
+    time = datetime.now(auckland) if time is None else time.astimezone(auckland)
 
     return {"success": True, "period": get_period_for_time(time)}

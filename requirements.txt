@@ -9,3 +9,4 @@ uvicorn
 rich
 prisma
 pydantic_settings
+pytz
