@@ -1,5 +1,10 @@
 __all__ = ("prisma",)
 
-from prisma import Prisma
+import os
 
-prisma = Prisma()
+from prisma import Prisma
+from dotenv import load_dotenv
+
+load_dotenv()
+
+prisma = Prisma(datasource={"url": os.environ["DATABASE_URL"]})
