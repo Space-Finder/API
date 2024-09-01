@@ -57,6 +57,7 @@ async def get_bookings_todo(request: Request, teacher_id: str):
                 "period_number": period,
                 "line": course.line,
                 "course_id": course.id,
+                "common_id": course.commonId,
             }
             for period in [1, 2, 3]
             # Generate the todo list by checking missing periods
