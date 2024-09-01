@@ -1,7 +1,9 @@
+from datetime import datetime, timezone
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 
 from core import get_week
+from core.helpers import get_period_for_time
 
 other_router = APIRouter(
     tags=[
@@ -36,3 +38,16 @@ async def week_number(request: Request) -> dict:
     """
 
     return {"success": True, "week": get_week()}
+
+
+@other_router.get("/api/current_period")
+async def get_period_from_time(request: Request, time: datetime | None = None) -> dict:
+    """
+    Returns the period thats occuring during the time provided
+    (Uses UTC time)
+    """
+
+    if time is None:
+        time = datetime.now(timezone.utc)
+
+    return {"success": True, "period": get_period_for_time(time)}
