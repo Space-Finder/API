@@ -1,12 +1,15 @@
 __all__ = ("image_router",)
 
+from io import BytesIO
 from datetime import datetime, timedelta
 
 import pytz
+from fastapi.responses import StreamingResponse
 from fastapi import APIRouter, Request, HTTPException
 
 from core import prisma, get_week
 from core.helpers import get_period_for_time
+from core.helpers.genimage import generate_common_image
 
 image_router = APIRouter(
     tags=[
@@ -46,6 +49,7 @@ async def generate_image(
         include={
             "course": {"include": {"common": True}},
             "space": {"include": {"common": True}},
+            "teacher": {"include": {"user": True}},
         },
     )
 
@@ -60,8 +64,11 @@ async def generate_image(
         )
     ]
 
-    return filtered_bookings
+    image = generate_common_image(
+        common.name, common.color, common.color2, filtered_bookings
+    )
+    image_buffer = BytesIO()
+    image.save(image_buffer, "PNG")
+    image_buffer.seek(0)
 
-    # name = common.name
-    # primary_color = common.color
-    # secondary_color = common.color2
+    return StreamingResponse(image_buffer, media_type="image/png")
