@@ -15,6 +15,7 @@ booking_router = APIRouter(
 
 class Booking(BaseModel):
     week: int
+    line: int
     period: int
     space_id: str
     course_id: str
@@ -70,15 +71,21 @@ async def get_bookings_todo(request: Request, teacher_id: str):
 
 @booking_router.post("/")
 async def make_booking(request: Request, booking_data: Booking):
-    existing_booking = await prisma.booking.find_first(
+    existing_bookings = await prisma.booking.find_many(
         where={
             "week": booking_data.week,
             "periodNumber": booking_data.period,
             "spaceId": booking_data.space_id,
-        }
+        },
+        include={"course": True},
     )
 
-    if existing_booking:
+    conflict = any(
+        booking.course and booking.course.line == booking_data.line
+        for booking in existing_bookings
+    )
+
+    if conflict:
         raise HTTPException(
             status_code=409,
             detail="Booking conflict: This space is already booked for the specified period.",
