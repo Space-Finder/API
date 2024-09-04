@@ -23,10 +23,10 @@ model Booking {
 }
 
 model Common {
-  id     String  @id @unique @default(cuid())
-  name   String  @unique
-  color  String?
-  color2 String?
+  id     String @id @unique @default(cuid())
+  name   String @unique
+  color  String
+  color2 String
 
   spaces  Space[]
   Teacher Teacher[]
