@@ -10,3 +10,4 @@ rich
 prisma
 pydantic_settings
 pytz
+Pillow
