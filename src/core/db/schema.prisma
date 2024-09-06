@@ -82,7 +82,7 @@ model User {
   id            String    @id @default(cuid())
   name          String
   email         String    @unique
-  image         String
+  image         String?
   emailVerified DateTime? @map("email_verified")
   isOnboarded   Boolean   @default(false) @map("is_onboarded")
   kamarPassword String?   @map("kamar_password")
