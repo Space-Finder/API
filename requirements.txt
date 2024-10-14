@@ -4,7 +4,6 @@ fastapi
 fastapi-utils
 python-dotenv
 slowapi
-validators
 uvicorn
 rich
 prisma
