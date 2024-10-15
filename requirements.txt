@@ -10,3 +10,4 @@ prisma
 pydantic_settings
 pytz
 Pillow
+jwt
