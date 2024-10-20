@@ -1,5 +1,6 @@
 __all__ = ("image_router",)
 
+import urllib.parse
 from io import BytesIO
 from os.path import join, dirname
 from datetime import datetime, timedelta
@@ -9,6 +10,7 @@ from prisma.enums import Year
 from prisma.models import Booking
 from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.templating import Jinja2Templates
 
 from core import prisma
 from core.helpers.dates import get_week, get_period_for_time
@@ -18,14 +20,19 @@ image_router = APIRouter(
     tags=[
         "Image",
     ],
-    prefix="/api/image",
+    prefix="/api",
 )
 
 AUCKLAND = pytz.timezone("Pacific/Auckland")
-EMPTY_IMAGE = join(dirname(__file__), "../../", "assets/", "images/empty.png")
+
+ASSETS_DIRECTORY = join(dirname(__file__), "../../", "assets/")
+EMPTY_IMAGE = join(ASSETS_DIRECTORY, "images/empty.png")
+
+TEMPLATE_DIR = join(ASSETS_DIRECTORY, "templates")
+TEMPLATES = Jinja2Templates(directory=TEMPLATE_DIR)
 
 
-@image_router.get("/")
+@image_router.get("/image")
 async def generate_image(
     request: Request, common_id: str, time: datetime | None = None, exact: bool = False
 ):
@@ -95,3 +102,15 @@ async def generate_image(
     image_buffer.seek(0)
 
     return StreamingResponse(image_buffer, media_type="image/png")
+
+
+@image_router.get("/html")
+async def image_page(request: Request, common_id: str, time: datetime | None = None):
+    return TEMPLATES.TemplateResponse(
+        request=request,
+        name="digiscreen.html",
+        context={
+            "common_id": common_id,
+            "time": urllib.parse.quote(str(time)) if time is not None else time,
+        },
+    )
