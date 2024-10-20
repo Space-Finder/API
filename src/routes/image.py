@@ -36,15 +36,9 @@ TEMPLATES = Jinja2Templates(directory=TEMPLATE_DIR)
 async def generate_image(
     request: Request, common_id: str, time: datetime | None = None, exact: bool = False
 ):
-    empty_response = (
-        None
-        if request.app.settings.DEVMODE
-        else FileResponse(path=EMPTY_IMAGE, media_type="image/png")
-    )
-
     common = await prisma.common.find_unique(where={"id": common_id})
     if common is None:
-        return empty_response
+        return None
 
     time = datetime.now(AUCKLAND) if time is None else time.astimezone(AUCKLAND)
     if not exact:
@@ -91,7 +85,7 @@ async def generate_image(
         bookings.extend(filtered_bookings)
 
     if not bookings:
-        return empty_response
+        return None
 
     image = generate_common_image(
         common.name, common.primaryColor, common.secondaryColor, bookings
