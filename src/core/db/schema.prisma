@@ -87,7 +87,7 @@ model Period {
   startTime     String         @map("start_time")
   endTime       String         @map("end_time")
   periodType    PeriodType     @map("period_type")
-  periodNumber  Int            @map("period_number")
+  periodNumber  Int?           @map("period_number")
   name          String?
   line          Int?
   dayTimetables DayTimetable[] @relation("DayTimetablePeriods")
