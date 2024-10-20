@@ -112,5 +112,6 @@ async def image_page(request: Request, common_id: str, time: datetime | None = N
         context={
             "common_id": common_id,
             "time": urllib.parse.quote(str(time)) if time is not None else time,
+            "base_url": request.app.settings.BASE_URL,
         },
     )
