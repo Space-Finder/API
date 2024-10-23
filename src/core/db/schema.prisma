@@ -20,6 +20,9 @@ model User {
 
   teachers Teacher[]
 
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@map("users")
 }
 
@@ -32,10 +35,13 @@ model Teacher {
   userId   String? @unique @map("user_id")
   commonId String  @map("common_id")
 
-  user    User?     @relation(fields: [userId], references: [id])
-  common  Common    @relation(fields: [commonId], references: [id])
-  courses Course[]
-  Booking Booking[]
+  user     User?     @relation(fields: [userId], references: [id])
+  common   Common    @relation(fields: [commonId], references: [id])
+  courses  Course[]
+  bookings Booking[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("teachers")
 }
@@ -50,9 +56,12 @@ model Course {
   teacherId String @map("teacher_id")
   commonId  String @map("common_id")
 
-  teacher Teacher   @relation(fields: [teacherId], references: [id])
-  common  Common    @relation(fields: [commonId], references: [id])
-  Booking Booking[]
+  teacher  Teacher   @relation(fields: [teacherId], references: [id])
+  common   Common    @relation(fields: [commonId], references: [id])
+  bookings Booking[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("courses")
 }
@@ -67,6 +76,9 @@ model Common {
   courses  Course[]
   spaces   Space[]
 
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@map("commons")
 }
 
@@ -76,21 +88,28 @@ model Space {
 
   commonId String? @map("common_id")
 
-  common  Common?   @relation(fields: [commonId], references: [id])
-  Booking Booking[]
+  common   Common?   @relation(fields: [commonId], references: [id])
+  bookings Booking[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("spaces")
 }
 
 model Period {
-  id            String         @id @unique @default(cuid())
-  startTime     String         @map("start_time")
-  endTime       String         @map("end_time")
-  periodType    PeriodType     @map("period_type")
-  periodNumber  Int?           @map("period_number")
-  name          String?
-  line          Int?
+  id           String     @id @unique @default(cuid())
+  startTime    String     @map("start_time")
+  endTime      String     @map("end_time")
+  periodType   PeriodType @map("period_type")
+  periodNumber Int?       @map("period_number")
+  name         String?
+  line         Int?
+
   dayTimetables DayTimetable[] @relation("DayTimetablePeriods")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("periods")
 }
@@ -105,6 +124,9 @@ model DayTimetable {
   wednesdayOf WeekTimetable[] @relation("WednesdayRelation")
   thursdayOf  WeekTimetable[] @relation("ThursdayRelation")
   fridayOf    WeekTimetable[] @relation("FridayRelation")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("day_timetables")
 }
@@ -128,6 +150,9 @@ model WeekTimetable {
 
   weeks Week[]
 
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@map("week_timetables")
 }
 
@@ -135,11 +160,14 @@ model Week {
   id        String @id @unique @default(cuid())
   number    Int
   year      Int // what year it is eg 2023, 2024 etc
-  yearGroup Year // what actual year group this corresponds to eg year 11 or year 12
+  yearGroup Year   @map("year_group") // what actual year group this corresponds to eg year 11 or year 12
 
   weekTimetableId String?        @map("week_timetable_id")
   weekTimetable   WeekTimetable? @relation(fields: [weekTimetableId], references: [id])
-  Booking         Booking[]
+  bookings        Booking[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("weeks")
 }
@@ -157,6 +185,24 @@ model Booking {
   course  Course  @relation(fields: [courseId], references: [id])
   week    Week    @relation(fields: [weekId], references: [id])
   teacher Teacher @relation(fields: [teacherId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("bookings")
+}
+
+model Term {
+  id        String   @id @default(cuid())
+  number    Int
+  startDate DateTime @map("start_date")
+  endDate   DateTime @map("end_date")
+  year      Int
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("terms")
 }
 
 enum PeriodType {
@@ -177,12 +223,4 @@ enum Year {
   Y11
   Y12
   Y13
-}
-
-enum Day {
-  MONDAY
-  TUESDAY
-  WEDNESDAY
-  THURSDAY
-  FRIDAY
 }
